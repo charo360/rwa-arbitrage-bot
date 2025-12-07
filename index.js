@@ -25,6 +25,13 @@ const TOKENS = {
 };
 
 const RWA_TOKENS = [
+  // Test with SOL first to verify Jupiter works
+  {
+    symbol: 'SOL',
+    mint: 'So11111111111111111111111111111111111111112',
+    decimals: 9,
+    name: 'Solana (TEST)',
+  },
   { 
     symbol: 'OUSG', 
     mint: TOKENS.OUSG, 
@@ -90,6 +97,8 @@ async function getJupiterPrice(inputMint, outputMint, amount) {
   } catch (error) {
     if (error.message?.includes('No routes')) {
       console.log('  ⚠️  No route found (low liquidity)');
+    } else if (error.response?.status) {
+      console.log(`  ⚠️  Jupiter Error: HTTP ${error.response.status} - ${error.response.statusText || 'No routes available'}`);
     } else {
       console.log(`  ⚠️  Jupiter Error: ${error.message}`);
     }
