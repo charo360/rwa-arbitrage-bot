@@ -7,7 +7,7 @@
 
 require('dotenv').config();
 const { Connection, PublicKey } = require('@solana/web3.js');
-const axios = require('axios');
+const { createJupiterApiClient } = require('@jup-ag/api');
 
 // Configuration
 const CONFIG = {
@@ -61,36 +61,34 @@ console.log('==================================================\n');
 // Initialize Solana connection
 const connection = new Connection(CONFIG.RPC_URL, 'confirmed');
 
+// Initialize Jupiter API client
+const jupiterQuoteApi = createJupiterApiClient();
+
 /**
- * Get price from Jupiter Aggregator
+ * Get price from Jupiter Aggregator (using official SDK)
  */
 async function getJupiterPrice(inputMint, outputMint, amount) {
   try {
-    const url = `https://quote-api.jup.ag/v6/quote?inputMint=${inputMint}&outputMint=${outputMint}&amount=${amount}&slippageBps=50`;
-    
-    const response = await axios.get(url, {
-      timeout: 10000,
-      headers: {
-        'Accept': 'application/json',
-        'User-Agent': 'Mozilla/5.0 (RWA-Bot/1.0)'
-      }
+    const quote = await jupiterQuoteApi.quoteGet({
+      inputMint: inputMint,
+      outputMint: outputMint,
+      amount: amount,
+      slippageBps: 50
     });
 
-    if (response.data && response.data.outAmount) {
-      const outAmount = parseInt(response.data.outAmount);
+    if (quote && quote.outAmount) {
+      const outAmount = parseInt(quote.outAmount);
       const price = outAmount / amount;
       return {
         price,
         outAmount,
-        priceImpact: parseFloat(response.data.priceImpactPct || 0),
-        route: response.data.routePlan?.[0]?.swapInfo?.label || 'Unknown',
+        priceImpact: parseFloat(quote.priceImpactPct || 0),
+        route: quote.routePlan?.[0]?.swapInfo?.label || 'Unknown',
       };
     }
     return null;
   } catch (error) {
-    if (error.code === 'ENOTFOUND') {
-      console.log('  ⚠️  DNS Error - Jupiter API unreachable');
-    } else if (error.response?.status === 404) {
+    if (error.message?.includes('No routes')) {
       console.log('  ⚠️  No route found (low liquidity)');
     } else {
       console.log(`  ⚠️  Jupiter Error: ${error.message}`);
