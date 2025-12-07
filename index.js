@@ -61,7 +61,7 @@ console.log('Configuration:');
 console.log(`  Min Spread: ${CONFIG.MIN_SPREAD_PCT}%`);
 console.log(`  Trade Amount: ${CONFIG.TRADE_AMOUNT_USDC / 1e6} USDC`);
 console.log(`  Poll Interval: ${CONFIG.POLL_INTERVAL_MS / 1000}s`);
-console.log(`  Monitoring ${RWA_TOKENS.length} RWA tokens\n`);
+console.log(`  Monitoring ${MONITORED_TOKENS.length} volatile tokens\n`);
 console.log('API: Jupiter v6 (Solana flash loans)');
 console.log('==================================================\n');
 
